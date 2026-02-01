@@ -32,6 +32,11 @@ extern "C" {
 
 #include "ViGEm/Common.h"
 
+//
+// Include kernel-mode shared definitions for buffer types
+//
+#include "ViGEm/km/BusShared.h"
+
 #ifdef VIGEM_DYNAMIC
 #ifdef VIGEM_EXPORTS
 #define VIGEM_API __declspec(dllexport)
@@ -109,7 +114,7 @@ extern "C" {
 	/**
 	 * A macro that defines if the API succeeded
 	 *
-	 * @author	Benjamin "Nefarius" Höglinger-Stelzer
+	 * @author	Benjamin "Nefarius" Hï¿½glinger-Stelzer
 	 * @date	01.09.2020
 	 *
 	 * @param 	_val_	The error value.
@@ -158,10 +163,23 @@ extern "C" {
 
 	typedef EVT_VIGEM_DS4_NOTIFICATION *PFN_VIGEM_DS4_NOTIFICATION;
 
+	typedef _Function_class_(EVT_VIGEM_DS_NOTIFICATION)
+		VOID CALLBACK
+		EVT_VIGEM_DS_NOTIFICATION(
+			PVIGEM_CLIENT Client,
+			PVIGEM_TARGET Target,
+			UCHAR LargeMotor,
+			UCHAR SmallMotor,
+			DS_LIGHTBAR_COLOR LightbarColor,
+			LPVOID UserData
+		);
+
+	typedef EVT_VIGEM_DS_NOTIFICATION *PFN_VIGEM_DS_NOTIFICATION;
+
 	/**
 	 *  Allocates an object representing a driver connection
 	 *
-	 * @author	Benjamin "Nefarius" Höglinger-Stelzer
+	 * @author	Benjamin "Nefarius" Hï¿½glinger-Stelzer
 	 * @date	28.08.2017
 	 *
 	 * @returns	A PVIGEM_CLIENT object.
@@ -171,7 +189,7 @@ extern "C" {
 	/**
 	 * Frees up memory used by the driver connection object
 	 *
-	 * @author	Benjamin "Nefarius" Höglinger-Stelzer
+	 * @author	Benjamin "Nefarius" Hï¿½glinger-Stelzer
 	 * @date	28.08.2017
 	 *
 	 * @param 	vigem	The PVIGEM_CLIENT object.
@@ -184,7 +202,7 @@ extern "C" {
 	 * Initializes the driver object and establishes a connection to the emulation bus
 	 *          driver. Returns an error if no compatible bus device has been found.
 	 *
-	 * @author	Benjamin "Nefarius" Höglinger-Stelzer
+	 * @author	Benjamin "Nefarius" Hï¿½glinger-Stelzer
 	 * @date	28.08.2017
 	 *
 	 * @param 	vigem	The PVIGEM_CLIENT object.
@@ -201,7 +219,7 @@ extern "C" {
 	 *           still be connected will be destroyed automatically. Be aware, that allocated target
 	 *           objects won't be automatically freed, this has to be taken care of by the caller.
 	 *
-	 * @author	Benjamin "Nefarius" Höglinger-Stelzer
+	 * @author	Benjamin "Nefarius" Hï¿½glinger-Stelzer
 	 * @date	28.08.2017
 	 *
 	 * @param 	vigem	The PVIGEM_CLIENT object.
@@ -229,7 +247,7 @@ extern "C" {
 	/**
 	 * Allocates an object representing an Xbox 360 Controller device.
 	 *
-	 * @author	Benjamin "Nefarius" Höglinger-Stelzer
+	 * @author	Benjamin "Nefarius" Hï¿½glinger-Stelzer
 	 * @date	28.08.2017
 	 *
 	 * @returns	A PVIGEM_TARGET representing an Xbox 360 Controller device.
@@ -239,7 +257,7 @@ extern "C" {
 	/**
 	 * Allocates an object representing a DualShock 4 Controller device.
 	 *
-	 * @author	Benjamin "Nefarius" Höglinger-Stelzer
+	 * @author	Benjamin "Nefarius" Hï¿½glinger-Stelzer
 	 * @date	28.08.2017
 	 *
 	 * @returns	A PVIGEM_TARGET representing a DualShock 4 Controller device.
@@ -247,12 +265,32 @@ extern "C" {
 	VIGEM_API PVIGEM_TARGET vigem_target_ds4_alloc(void);
 
 	/**
+	 * Allocates an object representing a DualSense Controller device.
+	 *
+	 * @author	ViGEmBus Community
+	 * @date	01.02.2026
+	 *
+	 * @returns	A PVIGEM_TARGET representing a DualSense Controller device.
+	 */
+	VIGEM_API PVIGEM_TARGET vigem_target_ds_alloc(void);
+
+	/**
+	 * Allocates an object representing a DualSense Edge Controller device.
+	 *
+	 * @author	ViGEmBus Community
+	 * @date	01.02.2026
+	 *
+	 * @returns	A PVIGEM_TARGET representing a DualSense Edge Controller device.
+	 */
+	VIGEM_API PVIGEM_TARGET vigem_target_ds_edge_alloc(void);
+
+	/**
 	 * Frees up memory used by the target device object. This does not automatically remove
 	 *          the associated device from the bus, if present. If the target device doesn't get
 	 *          removed before this call, the device becomes orphaned until the owning process is
 	 *          terminated.
 	 *
-	 * @author	Benjamin "Nefarius" Höglinger-Stelzer
+	 * @author	Benjamin "Nefarius" Hï¿½glinger-Stelzer
 	 * @date	28.08.2017
 	 *
 	 * @param 	target	The target device object.
@@ -266,7 +304,7 @@ extern "C" {
 	 *          event of a physical hardware device. This function blocks until the target device is
 	 *          in full operational mode.
 	 *
-	 * @author	Benjamin "Nefarius" Höglinger-Stelzer
+	 * @author	Benjamin "Nefarius" Hï¿½glinger-Stelzer
 	 * @date	28.08.2017
 	 *
 	 * @param 	vigem 	The driver connection object.
@@ -285,7 +323,7 @@ extern "C" {
 	 *          callback may be registered which gets called on error or if the target device has
 	 *          become fully operational.
 	 *
-	 * @author	Benjamin "Nefarius" Höglinger-Stelzer
+	 * @author	Benjamin "Nefarius" Hï¿½glinger-Stelzer
 	 * @date	28.08.2017
 	 *
 	 * @param 	vigem 	The driver connection object.
@@ -306,7 +344,7 @@ extern "C" {
 	 *           after this function is called. If this function is never called on target device
 	 *           objects, they will be removed from the bus when the owning process terminates.
 	 *
-	 * @author	Benjamin "Nefarius" Höglinger
+	 * @author	Benjamin "Nefarius" Hï¿½glinger
 	 * @date	28.08.2017
 	 *
 	 * @param 	vigem 	The driver connection object.
@@ -324,7 +362,7 @@ extern "C" {
 	 *                 occur on the provided target device. This function fails if the provided
 	 *                 target device isn't fully operational or in an erroneous state.
 	 *
-	 * @author	Benjamin "Nefarius" Höglinger
+	 * @author	Benjamin "Nefarius" Hï¿½glinger
 	 * @date	28.08.2017
 	 *
 	 * @param 	vigem			The driver connection object.
@@ -347,7 +385,7 @@ extern "C" {
 	 * when LightBar or vibration state changes occur on the provided target device. This function
 	 * fails if the provided target device isn't fully operational or in an erroneous state.
 	 *
-	 * @author	Benjamin "Nefarius" Höglinger
+	 * @author	Benjamin "Nefarius" Hï¿½glinger
 	 * @date	28.08.2017
 	 *
 	 * @param 	vigem			The driver connection object.
@@ -367,7 +405,7 @@ extern "C" {
 	/**
 	 * Removes a previously registered callback function from the provided target object.
 	 *
-	 * @author	Benjamin "Nefarius" Höglinger
+	 * @author	Benjamin "Nefarius" Hï¿½glinger
 	 * @date	28.08.2017
 	 *
 	 * @param 	target	The target device object.
@@ -379,7 +417,7 @@ extern "C" {
 	/**
 	 * Removes a previously registered callback function from the provided target object.
 	 *
-	 * @author	Benjamin "Nefarius" Höglinger
+	 * @author	Benjamin "Nefarius" Hï¿½glinger
 	 * @date	28.08.2017
 	 *
 	 * @param 	target	The target device object.
@@ -391,7 +429,7 @@ extern "C" {
 	/**
 	 * Overrides the default Vendor ID value with the provided one.
 	 *
-	 * @author	Benjamin "Nefarius" Höglinger
+	 * @author	Benjamin "Nefarius" Hï¿½glinger
 	 * @date	28.08.2017
 	 *
 	 * @param 	target	The target device object.
@@ -405,7 +443,7 @@ extern "C" {
 	/**
 	 * Overrides the default Product ID value with the provided one.
 	 *
-	 * @author	Benjamin "Nefarius" Höglinger
+	 * @author	Benjamin "Nefarius" Hï¿½glinger
 	 * @date	28.08.2017
 	 *
 	 * @param 	target	The target device object.
@@ -419,7 +457,7 @@ extern "C" {
 	/**
 	 * Returns the Vendor ID of the provided target device object.
 	 *
-	 * @author	Benjamin "Nefarius" Höglinger
+	 * @author	Benjamin "Nefarius" Hï¿½glinger
 	 * @date	28.08.2017
 	 *
 	 * @param 	target	The target device object.
@@ -433,7 +471,7 @@ extern "C" {
 	/**
 	 * Returns the Product ID of the provided target device object.
 	 *
-	 * @author	Benjamin "Nefarius" Höglinger
+	 * @author	Benjamin "Nefarius" Hï¿½glinger
 	 * @date	28.08.2017
 	 *
 	 * @param 	target	The target device object.
@@ -447,7 +485,7 @@ extern "C" {
 	/**
 	 * Sends a state report to the provided target device.
 	 *
-	 * @author	Benjamin "Nefarius" Höglinger
+	 * @author	Benjamin "Nefarius" Hï¿½glinger
 	 * @date	28.08.2017
 	 *
 	 * @param 	vigem 	The driver connection object.
@@ -466,7 +504,7 @@ extern "C" {
 	 * DEPRECATED. Sends a state report to the provided target device. It's recommended to use
 	 * vigem_target_ds4_update_ex instead to utilize all DS4 features like touch, gyro etc.
 	 *
-	 * @author	Benjamin "Nefarius" Höglinger
+	 * @author	Benjamin "Nefarius" Hï¿½glinger
 	 * @date	28.08.2017
 	 *
 	 * @param 	vigem 	The driver connection object.
@@ -485,7 +523,7 @@ extern "C" {
 	 * Sends a full size state report to the provided target device. It's recommended to use this
 	 * function over vigem_target_ds4_update.
 	 *
-	 * @author	Benjamin "Nefarius" Höglinger-Stelzer
+	 * @author	Benjamin "Nefarius" Hï¿½glinger-Stelzer
 	 * @date	07.09.2020
 	 *
 	 * @param 	vigem 	The driver connection object.
@@ -501,6 +539,44 @@ extern "C" {
 	);
 
 	/**
+	 * Sends a state report to the provided DualSense target device.
+	 *
+	 * @author	ViGEmBus Community
+	 * @date	01.02.2026
+	 *
+	 * @param 	vigem 	The driver connection object.
+	 * @param 	target	The target device object.
+	 * @param 	report	The report to send to the target device.
+	 *
+	 * @returns	A VIGEM_ERROR.
+	 */
+	VIGEM_API VIGEM_ERROR vigem_target_ds_update(
+		PVIGEM_CLIENT vigem,
+		PVIGEM_TARGET target,
+		DS_REPORT report
+	);
+
+	/**
+	 * Sends a full size state report to the provided DualSense target device.
+	 *
+	 * @author	ViGEmBus Community
+	 * @date	01.02.2026
+	 *
+	 * @param 	vigem 	The driver connection object.
+	 * @param 	target	The target device object.
+	 * @param 	report	The extended report buffer.
+	 * @param 	size	The size of the report buffer.
+	 *
+	 * @returns	A VIGEM_ERROR.
+	 */
+	VIGEM_API VIGEM_ERROR vigem_target_ds_update_ex(
+		PVIGEM_CLIENT vigem,
+		PVIGEM_TARGET target,
+		const unsigned char* report,
+		ULONG size
+	);
+
+	/**
 	 * Returns the internal index (serial number) the bus driver assigned to the provided
 	 *               target device object. Note that this value is specific to the inner workings of
 	 *               the bus driver, it does not reflect related values like player index or device
@@ -509,7 +585,7 @@ extern "C" {
 	 *               device is removed from the bus and may change on the next addition of the
 	 *               device.
 	 *
-	 * @author	Benjamin "Nefarius" Höglinger
+	 * @author	Benjamin "Nefarius" Hï¿½glinger
 	 * @date	28.08.2017
 	 *
 	 * @param 	target	The target device object.
@@ -523,7 +599,7 @@ extern "C" {
 	/**
 	 * Returns the type of the provided target device object.
 	 *
-	 * @author	Benjamin "Nefarius" Höglinger
+	 * @author	Benjamin "Nefarius" Hï¿½glinger
 	 * @date	28.08.2017
 	 *
 	 * @param 	target	The target device object.
@@ -538,7 +614,7 @@ extern "C" {
 	 * Returns TRUE if the provided target device object is currently attached to the bus,
 	 *              FALSE otherwise.
 	 *
-	 * @author	Benjamin "Nefarius" Höglinger
+	 * @author	Benjamin "Nefarius" Hï¿½glinger
 	 * @date	30.08.2017
 	 *
 	 * @param 	target	The target device object.
@@ -555,7 +631,7 @@ extern "C" {
 	 *                physical controller and is compatible to the dwUserIndex property of the
 	 *                XInput* APIs.
 	 *
-	 * @author	Benjamin "Nefarius" Höglinger
+	 * @author	Benjamin "Nefarius" Hï¿½glinger
 	 * @date	10.05.2018
 	 *
 	 * @param 	vigem 	The driver connection object.
@@ -578,7 +654,7 @@ extern "C" {
 	 * is recommended to repeatedly call this function in a thread. The call aborts with an error
 	 * code if the target gets unplugged in parallel.
 	 *
-	 * @author	Benjamin "Nefarius" Höglinger-Stelzer
+	 * @author	Benjamin "Nefarius" Hï¿½glinger-Stelzer
 	 * @date	06.08.2022
 	 *
 	 * @param 	vigem 	The driver connection object.
@@ -604,7 +680,7 @@ extern "C" {
 	 * parallel. If a timeout of INFINITE is specified, the function basically behaves identical to
 	 * vigem_target_ds4_await_output_report.
 	 *
-	 * @author	Benjamin "Nefarius" Höglinger-Stelzer
+	 * @author	Benjamin "Nefarius" Hï¿½glinger-Stelzer
 	 * @date	12.08.2022
 	 *
 	 * @param 	vigem			The driver connection object.
@@ -650,6 +726,106 @@ extern "C" {
      * @returns A VIGEM_ERROR.
      */
     VIGEM_API VIGEM_ERROR vigem_target_ds4_get_output(PVIGEM_CLIENT vigem, PVIGEM_TARGET target, PDS4_OUTPUT_DATA output);
+
+	/**
+	 * Registers a function which gets called when LightBar or vibration state changes
+	 * occur on the provided DualSense target device. This function fails if the provided
+	 * target device isn't fully operational or in an erroneous state.
+	 *
+	 * @author	ViGEmBus Community
+	 * @date	01.02.2026
+	 *
+	 * @param 	vigem			The driver connection object.
+	 * @param 	target			The target device object.
+	 * @param 	notification	The notification callback.
+	 * @param 	userData		The user data passed to the notification callback.
+	 *
+	 * @returns	A VIGEM_ERROR.
+	 */
+	VIGEM_API VIGEM_ERROR vigem_target_ds_register_notification(
+		PVIGEM_CLIENT vigem,
+		PVIGEM_TARGET target,
+		PFN_VIGEM_DS_NOTIFICATION notification,
+		LPVOID userData
+	);
+
+	/**
+	 * Removes a previously registered callback function from the provided DualSense target object.
+	 *
+	 * @author	ViGEmBus Community
+	 * @date	01.02.2026
+	 *
+	 * @param 	target	The target device object.
+	 */
+	VIGEM_API void vigem_target_ds_unregister_notification(
+		PVIGEM_TARGET target
+	);
+
+	/**
+	 * Waits until there's one or more pending raw output reports available to consume for DualSense. This
+	 * function blocks until data becomes available or the device gets disconnected. The waiting is
+	 * event-based, meaning that as soon as a data packet is pending, this call returns a copy of
+	 * the entire buffer. Each call returns a packet in the exact order it arrived in the driver. It
+	 * is recommended to repeatedly call this function in a thread. The call aborts with an error
+	 * code if the target gets unplugged in parallel.
+	 *
+	 * @author	ViGEmBus Community
+	 * @date	01.02.2026
+	 *
+	 * @param 	vigem 	The driver connection object.
+	 * @param 	target	The target device object.
+	 * @param 	buffer	The fixed-size 64-bytes output report buffer that gets written to.
+	 *
+	 * @returns	A VIGEM_ERROR.
+	 */
+	VIGEM_API VIGEM_ERROR vigem_target_ds_await_output_report(
+		PVIGEM_CLIENT vigem,
+		PVIGEM_TARGET target,
+		PDS_OUTPUT_BUFFER buffer
+	);
+
+	/**
+	 * Waits until there's one or more pending raw output reports available to consume for DualSense. This
+	 * function blocks until data becomes available, the provided timeout has been reached or the
+	 * device gets disconnected. The waiting is event-based, meaning that as soon as a data packet
+	 * is pending, this call returns a copy of the entire buffer. Each call returns a packet in the
+	 * exact order it arrived in the driver. It is recommended to repeatedly call this function in a
+	 * thread. A timeout of a few hundred milliseconds can be used to break out of the loop without
+	 * excessive CPU consumption. The call aborts with an error code if the target gets unplugged in
+	 * parallel. If a timeout of INFINITE is specified, the function basically behaves identical to
+	 * vigem_target_ds_await_output_report.
+	 *
+	 * @author	ViGEmBus Community
+	 * @date	01.02.2026
+	 *
+	 * @param 	vigem			The driver connection object.
+	 * @param 	target			The target device object.
+	 * @param 	milliseconds	The timeout in milliseconds.
+	 * @param 	buffer			The fixed-size 64-bytes output report buffer that gets written to.
+	 *
+	 * @returns	A VIGEM_ERROR.
+	 */
+	VIGEM_API VIGEM_ERROR vigem_target_ds_await_output_report_timeout(
+		PVIGEM_CLIENT vigem,
+		PVIGEM_TARGET target,
+		DWORD milliseconds,
+		PDS_OUTPUT_BUFFER buffer
+	);
+
+    /**
+     * Returns the output data of the DualSense gamepad. Output refers to the USB output report,
+     *                which is used to set LED and motor values.
+     *
+     * @author  ViGEmBus Community
+     * @date    01.02.2026
+     *
+     * @param   vigem   The driver connection object.
+     * @param   target  The target device object.
+     * @param   output  The values that are set by the output reports
+     *
+     * @returns A VIGEM_ERROR.
+     */
+    VIGEM_API VIGEM_ERROR vigem_target_ds_get_output(PVIGEM_CLIENT vigem, PVIGEM_TARGET target, PDS_OUTPUT_DATA output);
 
 #ifdef __cplusplus
 }

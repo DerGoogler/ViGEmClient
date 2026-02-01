@@ -72,6 +72,9 @@ DEFINE_GUID(GUID_DEVINTERFACE_BUSENUM_VIGEM,
 //#define IOCTL_XGIP_SUBMIT_INTERRUPT     BUSENUM_W_IOCTL (IOCTL_VIGEM_BASE + 0x205)
 #define IOCTL_XUSB_GET_USER_INDEX           BUSENUM_RW_IOCTL(IOCTL_VIGEM_BASE + 0x206)
 #define IOCTL_DS4_AWAIT_OUTPUT_AVAILABLE    BUSENUM_RW_IOCTL(IOCTL_VIGEM_BASE + 0x207)
+#define IOCTL_DS_SUBMIT_REPORT              BUSENUM_W_IOCTL (IOCTL_VIGEM_BASE + 0x208)
+#define IOCTL_DS_REQUEST_NOTIFICATION       BUSENUM_W_IOCTL (IOCTL_VIGEM_BASE + 0x209)
+#define IOCTL_DS_AWAIT_OUTPUT_AVAILABLE     BUSENUM_RW_IOCTL(IOCTL_VIGEM_BASE + 0x20A)
 
 
 //
@@ -500,6 +503,193 @@ VOID FORCEINLINE DS4_AWAIT_OUTPUT_INIT(
 	RtlZeroMemory(Output, sizeof(DS4_AWAIT_OUTPUT));
 
 	Output->Size = sizeof(DS4_AWAIT_OUTPUT);
+    Output->SerialNo = SerialNo;
+}
+
+#pragma endregion
+
+#pragma region DualSense section
+
+typedef struct _DS_OUTPUT_REPORT
+{
+    //
+    // Vibration intensity value of the small motor (0-255).
+    // 
+    UCHAR SmallMotor;
+
+    //
+    // Vibration intensity value of the large motor (0-255).
+    // 
+    UCHAR LargeMotor;
+
+    //
+    // Color values of the Lightbar.
+    //
+    DS_LIGHTBAR_COLOR LightbarColor;
+
+} DS_OUTPUT_REPORT, *PDS_OUTPUT_REPORT;
+
+//
+// Data structure used in IOCTL_DS_REQUEST_NOTIFICATION requests.
+// 
+typedef struct _DS_REQUEST_NOTIFICATION
+{
+    //
+    // sizeof(struct _DS_REQUEST_NOTIFICATION)
+    // 
+    ULONG Size;
+
+    //
+    // Serial number of target device.
+    // 
+    ULONG SerialNo;
+
+    //
+    // The HID output report
+    // 
+    DS_OUTPUT_REPORT Report;
+
+} DS_REQUEST_NOTIFICATION, *PDS_REQUEST_NOTIFICATION;
+
+//
+// Initializes a DS_REQUEST_NOTIFICATION structure.
+// 
+VOID FORCEINLINE DS_REQUEST_NOTIFICATION_INIT(
+    _Out_ PDS_REQUEST_NOTIFICATION Request,
+    _In_ ULONG SerialNo
+)
+{
+    RtlZeroMemory(Request, sizeof(DS_REQUEST_NOTIFICATION));
+
+    Request->Size = sizeof(DS_REQUEST_NOTIFICATION);
+    Request->SerialNo = SerialNo;
+}
+
+//
+// DualSense request data
+// 
+typedef struct _DS_SUBMIT_REPORT
+{
+    //
+    // sizeof(struct _DS_SUBMIT_REPORT)
+    // 
+    ULONG Size;
+
+    //
+    // Serial number of target device.
+    // 
+    ULONG SerialNo;
+
+    //
+    // HID Input report
+    // 
+    DS_REPORT Report;
+
+} DS_SUBMIT_REPORT, *PDS_SUBMIT_REPORT;
+
+//
+// Initializes a DualSense report.
+// 
+VOID FORCEINLINE DS_SUBMIT_REPORT_INIT(
+    _Out_ PDS_SUBMIT_REPORT Report,
+    _In_ ULONG SerialNo
+)
+{
+    RtlZeroMemory(Report, sizeof(DS_SUBMIT_REPORT));
+
+    Report->Size = sizeof(DS_SUBMIT_REPORT);
+    Report->SerialNo = SerialNo;
+
+    DS_REPORT_INIT(&Report->Report);
+}
+
+#include <pshpack1.h>
+
+//
+// DualSense output buffer structure
+// 
+typedef struct _DS_OUTPUT_BUFFER
+{
+    //
+    // The output report buffer
+    // 
+    _Out_ UCHAR Buffer[64];
+    
+} DS_OUTPUT_BUFFER, *PDS_OUTPUT_BUFFER;
+
+//
+// DualSense extended report request
+// 
+typedef struct _DS_SUBMIT_REPORT_EX
+{
+    //
+     // sizeof(struct _DS_SUBMIT_REPORT_EX)
+     // 
+    _In_ ULONG Size;
+
+    //
+    // Serial number of target device.
+    // 
+    _In_ ULONG SerialNo;
+
+    //
+    // Full size HID report excluding fixed Report ID.
+    // 
+    _In_ UCHAR Report[63];
+
+} DS_SUBMIT_REPORT_EX, * PDS_SUBMIT_REPORT_EX;
+
+#include <poppack.h>
+
+//
+// Initializes a DualSense extended report.
+// 
+VOID FORCEINLINE DS_SUBMIT_REPORT_EX_INIT(
+    _Out_ PDS_SUBMIT_REPORT_EX Report,
+    _In_ ULONG SerialNo
+)
+{
+    RtlZeroMemory(Report, sizeof(DS_SUBMIT_REPORT_EX));
+
+    Report->Size = sizeof(DS_SUBMIT_REPORT_EX);
+    Report->SerialNo = SerialNo;
+}
+
+#pragma endregion
+
+#pragma region DS Await Output
+
+#include <pshpack1.h>
+
+typedef struct _DS_AWAIT_OUTPUT
+{
+    //
+    // sizeof(struct _DS_AWAIT_OUTPUT)
+    // 
+    _In_ ULONG Size;
+
+    //
+    // Serial number of target device.
+    // 
+    _Inout_ ULONG SerialNo;
+
+    //
+    // The payload
+    // 
+    _Out_ DS_OUTPUT_BUFFER Report;
+    
+} DS_AWAIT_OUTPUT, * PDS_AWAIT_OUTPUT;
+
+#include <poppack.h>
+
+VOID FORCEINLINE DS_AWAIT_OUTPUT_INIT(
+    _Out_ PDS_AWAIT_OUTPUT Output,
+    _In_ ULONG SerialNo
+)
+{
+    RtlZeroMemory(Output, sizeof(DS_AWAIT_OUTPUT));
+
+    Output->Size = sizeof(DS_AWAIT_OUTPUT);
     Output->SerialNo = SerialNo;
 }
 

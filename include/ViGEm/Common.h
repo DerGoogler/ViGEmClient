@@ -37,7 +37,15 @@ typedef enum _VIGEM_TARGET_TYPE
     //
     // Sony DualShock 4 (wired)
     // 
-    DualShock4Wired = 2 // NOTE: 1 skipped on purpose to maintain compatibility
+    DualShock4Wired = 2, // NOTE: 1 skipped on purpose to maintain compatibility
+    //
+    // Sony DualSense (wired)
+    //
+    DualSenseWired = 3,
+    //
+    // Sony DualSense Edge (wired)
+    //
+    DualSenseEdgeWired = 4
 
 } VIGEM_TARGET_TYPE, *PVIGEM_TARGET_TYPE;
 
@@ -281,5 +289,127 @@ typedef struct _DS4_OUTPUT_BUFFER
 	_Out_ UCHAR Buffer[64];
 	
 } DS4_OUTPUT_BUFFER, *PDS4_OUTPUT_BUFFER;
+
+//
+// DualSense digital buttons
+// 
+typedef enum _DS_BUTTONS
+{
+    DS_BUTTON_THUMB_RIGHT      = 1 << 15,
+    DS_BUTTON_THUMB_LEFT       = 1 << 14,
+    DS_BUTTON_OPTIONS          = 1 << 13,
+    DS_BUTTON_CREATE           = 1 << 12,  // Share button is now "Create" button
+    DS_BUTTON_TRIGGER_RIGHT    = 1 << 11,
+    DS_BUTTON_TRIGGER_LEFT     = 1 << 10,
+    DS_BUTTON_SHOULDER_RIGHT   = 1 << 9,
+    DS_BUTTON_SHOULDER_LEFT    = 1 << 8,
+    DS_BUTTON_TRIANGLE         = 1 << 7,
+    DS_BUTTON_CIRCLE           = 1 << 6,
+    DS_BUTTON_CROSS            = 1 << 5,
+    DS_BUTTON_SQUARE           = 1 << 4
+
+} DS_BUTTONS, *PDS_BUTTONS;
+
+//
+// DualSense special buttons
+// 
+typedef enum _DS_SPECIAL_BUTTONS
+{
+    DS_SPECIAL_BUTTON_PS           = 1 << 0,
+    DS_SPECIAL_BUTTON_TOUCHPAD     = 1 << 1,
+    DS_SPECIAL_BUTTON_MUTE         = 1 << 2
+
+} DS_SPECIAL_BUTTONS, *PDS_SPECIAL_BUTTONS;
+
+//
+// DualSense directional pad (HAT) values
+// 
+typedef enum _DS_DPAD_DIRECTIONS
+{
+    DS_BUTTON_DPAD_NONE        = 0x8,
+    DS_BUTTON_DPAD_NORTHWEST   = 0x7,
+    DS_BUTTON_DPAD_WEST        = 0x6,
+    DS_BUTTON_DPAD_SOUTHWEST   = 0x5,
+    DS_BUTTON_DPAD_SOUTH       = 0x4,
+    DS_BUTTON_DPAD_SOUTHEAST   = 0x3,
+    DS_BUTTON_DPAD_EAST        = 0x2,
+    DS_BUTTON_DPAD_NORTHEAST   = 0x1,
+    DS_BUTTON_DPAD_NORTH       = 0x0
+
+} DS_DPAD_DIRECTIONS, *PDS_DPAD_DIRECTIONS;
+
+//
+// The color value (RGB) of a DualSense Lightbar
+// 
+typedef struct _DS_LIGHTBAR_COLOR
+{
+    //
+    // Red part of the Lightbar (0-255).
+    //
+    UCHAR Red;
+
+    //
+    // Green part of the Lightbar (0-255).
+    //
+    UCHAR Green;
+
+    //
+    // Blue part of the Lightbar (0-255).
+    //
+    UCHAR Blue;
+
+} DS_LIGHTBAR_COLOR, *PDS_LIGHTBAR_COLOR;
+
+//
+// DualSense HID Input report
+// 
+typedef struct _DS_REPORT
+{
+    BYTE bThumbLX;
+    BYTE bThumbLY;
+    BYTE bThumbRX;
+    BYTE bThumbRY;
+    USHORT wButtons;
+    BYTE bSpecial;
+    BYTE bTriggerL;
+    BYTE bTriggerR;
+
+} DS_REPORT, *PDS_REPORT;
+
+//
+// Sets the current state of the D-PAD on a DualSense report.
+// 
+VOID FORCEINLINE DS_SET_DPAD(
+    _Out_ PDS_REPORT Report,
+    _In_ DS_DPAD_DIRECTIONS Dpad
+)
+{
+    Report->wButtons &= ~0xF;
+    Report->wButtons |= (USHORT)Dpad;
+}
+
+VOID FORCEINLINE DS_REPORT_INIT(
+    _Out_ PDS_REPORT Report
+)
+{
+    RtlZeroMemory(Report, sizeof(DS_REPORT));
+
+    Report->bThumbLX = 0x80;
+    Report->bThumbLY = 0x80;
+    Report->bThumbRX = 0x80;
+    Report->bThumbRY = 0x80;
+
+    DS_SET_DPAD(Report, DS_BUTTON_DPAD_NONE);
+}
+
+//
+// Values set by output reports on DualSense
+//
+typedef struct _DS_OUTPUT_DATA
+{
+    UCHAR LargeMotor;
+    UCHAR SmallMotor;
+    DS_LIGHTBAR_COLOR LightbarColor;
+} DS_OUTPUT_DATA, *PDS_OUTPUT_DATA;
 
 #include <poppack.h>
